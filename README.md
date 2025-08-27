@@ -91,9 +91,9 @@ The system exposes a REST API endpoint for querying pages with a given userId an
 ```
 POST /get-nexus
 ```
-There is also an endpoint to simulate the asynchronous injection of user information for caching snapshot embeddings
+There is also an endpoint to simulate the asynchronous injestion of user information for caching snapshot embeddings
 ```
-PUT /inject-nexus
+PUT /injest-user
 ```
 
 ## Project Structure
