@@ -38,7 +38,7 @@ func (h *handler) GetNexus(w http.ResponseWriter, r *http.Request) {
 	}
 }
 
-func (h *handler) InjectUser(w http.ResponseWriter, r *http.Request) {
+func (h *handler) InjestUser(w http.ResponseWriter, r *http.Request) {
 	var userSnapshot model.UserSnapshot
 
 	if err := json.NewDecoder(r.Body).Decode(&userSnapshot); err != nil {
@@ -46,7 +46,7 @@ func (h *handler) InjectUser(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	embedding, err := h.Nexus.InjestUser(r.Context(), userSnapshot)
+	_, err := h.Nexus.InjestUser(r.Context(), userSnapshot)
 	if err != nil {
 		http.Error(w, fmt.Sprintf("Failed to inject user: %v", err), http.StatusInternalServerError)
 		return
@@ -54,12 +54,4 @@ func (h *handler) InjectUser(w http.ResponseWriter, r *http.Request) {
 
 	w.Header().Set("Content-Type", "application/json")
 	w.WriteHeader(http.StatusCreated)
-	response := map[string]any{
-		"user_id":   userSnapshot.ID,
-		"embedding": embedding,
-		"status":    "injected",
-	}
-	if err := json.NewEncoder(w).Encode(response); err != nil {
-		http.Error(w, fmt.Sprintf("Failed to encode response: %v", err), http.StatusInternalServerError)
-	}
 }

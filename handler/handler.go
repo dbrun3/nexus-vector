@@ -17,6 +17,6 @@ func NewHandler(n nexus.Nexus) *handler {
 func (h *handler) SetupRoutes() *http.ServeMux {
 	mux := http.NewServeMux()
 	mux.HandleFunc("POST /get-nexus", h.GetNexus)
-	mux.HandleFunc("POST /inject-user", h.InjectUser)
+	mux.HandleFunc("PUT /injest-user", h.InjestUser)
 	return mux
 }

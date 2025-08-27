@@ -87,11 +87,14 @@ make run
 ```
 
 ### API Usage
-The system exposes a REST API endpoint:
+The system exposes a REST API endpoint for querying pages with a given userId and event trigger:
 ```
 POST /get-nexus
 ```
-Send a JSON payload with user ID and trigger information to receive personalized nexus pages.
+There is also an endpoint to simulate the asynchronous injection of user information for caching snapshot embeddings
+```
+PUT /inject-nexus
+```
 
 ## Project Structure
 - `/nexus` - Core recommendation engine and business logic
