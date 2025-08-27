@@ -1,0 +1,32 @@
+version: '3.8'
+
+services:
+  benchmark-test:
+    build: 
+      context: .
+      dockerfile: Dockerfile.bench
+    depends_on:
+      - qdrant
+      - torchserve
+      - redis
+    environment:
+      - OPENAI_API_KEY=${OPENAI_API_KEY}
+      - QDRANT_HOST=qdrant
+      - REDIS_HOST=redis
+      - TORCHSERVE_HOST=torchserve
+      - MODEL=my_model
+
+  qdrant:
+    image: qdrant/qdrant
+
+  redis:
+    image: redis:latest
+    healthcheck:
+      test: ["CMD-SHELL", "redis-cli ping | grep PONG"]
+      interval: 1s
+      timeout: 3s
+      retries: 5
+    command: ["redis-server"]
+
+  torchserve:
+    image: ghcr.io/dbrun3/torchserve-all-minilm-l6-v2:v0.0.2

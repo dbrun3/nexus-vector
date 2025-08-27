@@ -1,0 +1,43 @@
+version: '3.8'
+
+services:
+  integration-tests:
+    build: 
+      context: .
+      dockerfile: Dockerfile.test
+    depends_on:
+      - qdrant
+      - torchserve
+      - redis
+      - mongo
+    environment:
+      - OPENAI_API_KEY=${OPENAI_API_KEY}
+      - QDRANT_HOST=qdrant
+      - REDIS_HOST=redis
+      - MONGODB_HOST=mongo
+      - MONGODB_USER=root
+      - MONGODB_PASS=password
+      - TORCHSERVE_HOST=torchserve
+      - MODEL=my_model
+
+  qdrant:
+    image: qdrant/qdrant
+
+  redis:
+    image: redis:latest
+    healthcheck:
+      test: ["CMD-SHELL", "redis-cli ping | grep PONG"]
+      interval: 1s
+      timeout: 3s
+      retries: 5
+    command: ["redis-server"]
+
+  mongo:
+    image: mongo
+    restart: always
+    environment:
+      MONGO_INITDB_ROOT_USERNAME: root
+      MONGO_INITDB_ROOT_PASSWORD: password
+
+  torchserve:
+    image: ghcr.io/dbrun3/torchserve-all-minilm-l6-v2:v0.0.2
