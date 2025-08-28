@@ -38,6 +38,34 @@ func (h *handler) GetNexus(w http.ResponseWriter, r *http.Request) {
 	}
 }
 
+// GetUserSnapshot retrieves a user snapshot by ID
+func (h *handler) GetUserSnapshot(w http.ResponseWriter, r *http.Request) {
+	// Extract user ID from URL path
+	userId := r.PathValue("userId")
+	if userId == "" {
+		http.Error(w, "User ID is required", http.StatusBadRequest)
+		return
+	}
+
+	// Get user snapshot
+	userSnapshot, err := h.Nexus.GetUserSnapshot(r.Context(), userId)
+	if err != nil {
+		if err.Error() == "MongoDB client not available (test environment)" {
+			http.Error(w, "User snapshots not available in test environment", http.StatusServiceUnavailable)
+			return
+		}
+		http.Error(w, fmt.Sprintf("Failed to get user snapshot: %v", err), http.StatusNotFound)
+		return
+	}
+
+	// Return user snapshot
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(http.StatusOK)
+	if err := json.NewEncoder(w).Encode(userSnapshot); err != nil {
+		http.Error(w, fmt.Sprintf("Failed to encode response: %v", err), http.StatusInternalServerError)
+	}
+}
+
 func (h *handler) InjestUser(w http.ResponseWriter, r *http.Request) {
 	var userSnapshot model.UserSnapshot
 

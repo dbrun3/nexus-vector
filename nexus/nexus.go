@@ -173,6 +173,57 @@ func (n *Nexus) InjestUser(ctx context.Context, request model.UserSnapshot) ([]f
 	return userEmbedding, nil
 }
 
+// DebugBootstrap generates several random user snapshots and triggers initial GetNexus calls to populate pages
+func (n *Nexus) DebugBootstrap(ctx context.Context, count int, seedOffset uint64) ([]string, error) {
+	userIds := make([]string, 0, count)
+
+	for i := range count {
+		userSnapshot := model.CreateRandomSnapshot(seedOffset + uint64(i))
+
+		_, err := n.InjestUser(ctx, userSnapshot)
+		if err != nil {
+			return nil, fmt.Errorf("failed to inject user %d: %w", i, err)
+		}
+
+		userIds = append(userIds, userSnapshot.ID)
+
+		// Generate random triggers and call GetNexus to populate database with pages via cache misses
+		// Create 2-3 different trigger scenarios per user to ensure variety
+		triggersPerUser := 2 + (i % 2) // 2 or 3 triggers per user
+		for j := 0; j < triggersPerUser; j++ {
+			trigger := model.CreateRandomTrigger(seedOffset + uint64(i*10) + uint64(j))
+
+			request := api.NexusRequest{
+				UserId:  userSnapshot.ID,
+				Trigger: trigger,
+			}
+
+			// Call GetNexus to trigger page generation and storage
+			_, err := n.GetNexus(ctx, request)
+			if err != nil {
+				// Log error but don't fail bootstrap - some cache misses are expected
+				fmt.Printf("Warning: GetNexus call failed for user %s, trigger %d: %v\n", userSnapshot.ID, j, err)
+			}
+		}
+	}
+
+	return userIds, nil
+}
+
+// GetUserSnapshot retrieves a user snapshot from MongoDB by ID
+func (n *Nexus) GetUserSnapshot(ctx context.Context, userId string) (*model.UserSnapshot, error) {
+	if n.mdClient == nil {
+		return nil, fmt.Errorf("MongoDB client not available (test environment)")
+	}
+
+	userSnapshot, err := n.mdClient.GetUserSnapshot(ctx, userId)
+	if err != nil {
+		return nil, fmt.Errorf("failed to get user snapshot: %w", err)
+	}
+
+	return userSnapshot, nil
+}
+
 func (n *Nexus) DebugQd() *qdrant.Client {
 	return n.qdClient
 }

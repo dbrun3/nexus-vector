@@ -87,13 +87,99 @@ make run
 ```
 
 ### API Usage
-The system exposes a REST API endpoint for querying pages with a given userId and event trigger:
+The system exposes several REST API endpoints:
+
+#### Core Endpoints
 ```
-POST /get-nexus
+POST /get-nexus        # Get personalized recommendation pages
+PUT /injest-user       # Store user profile and generate embeddings
+GET /user/{userId}     # Retrieve stored user snapshot
 ```
-There is also an endpoint to simulate the asynchronous injestion of user information for caching snapshot embeddings
+
+#### Debug/Testing Endpoints
 ```
-PUT /injest-user
+POST /debug/bootstrap  # Generate multiple test users
+```
+
+#### Endpoint Details
+
+**POST /get-nexus** - Returns personalized pages based on user profile and current trigger event
+- Requires: User must be previously injected via `/injest-user`
+- Input: `userId` and `trigger` object (see sample below)
+- Output: Array of personalized `Page` objects
+
+**PUT /injest-user** - Stores user profile and caches embedding for fast retrieval
+- Input: Complete `UserSnapshot` object (see sample below)
+- Output: Success confirmation
+- Note: Must be called before using `/get-nexus` for the user
+
+**GET /user/{userId}** - Retrieves stored user snapshot from MongoDB
+- Input: User ID in URL path
+- Output: Complete `UserSnapshot` object
+- Note: Only available in production environment with MongoDB
+
+**POST /debug/bootstrap** - Generates multiple random test users and populates pages via initial GetNexus calls
+- Query params: `count` (default: 10), `seed` (default: 1000)
+- Output: Array of generated user IDs
+- Process: Creates users, injects them, then calls GetNexus with 2-3 random triggers per user to populate page database via cache misses
+- Example: `/debug/bootstrap?count=5&seed=2000`
+
+#### Sample Injest User Request
+```json
+{
+  "id": "user-12345",
+  "gender": "female",
+  "age": 28,
+  "location": "urban",
+  "rewards_balance": 2450,
+  "total_spend": 8750.25,
+  "last_purchase_category": "electronics",
+  "favorite_categories": ["electronics", "clothing", "beauty"],
+  "engagement_level": "high",
+  "app_usage_frequency": "daily",
+  "preferred_offer_type": "cashback",
+  "seasonal_preference": "summer",
+  "shopping_time_pref": "evening",
+  "price_sensitivity": "medium",
+  "brand_loyalty": "high"
+}
+```
+
+#### Sample Get Nexus Request
+```json
+{
+  "userId": "user-12345",
+  "trigger": {
+    "trigger_type": "ereceipt",
+    "amount": 127.49,
+    "category": "groceries",
+    "retailer": "Whole Foods",
+    "location": "San Francisco, CA",
+    "items": [
+      {
+        "name": "Organic Avocados",
+        "brand": "365 Everyday Value",
+        "category": "groceries",
+        "price": 6.99,
+        "quantity": 2
+      },
+      {
+        "name": "Almond Milk",
+        "brand": "Califia Farms",
+        "category": "groceries", 
+        "price": 4.49,
+        "quantity": 3
+      },
+      {
+        "name": "Grass-Fed Ground Beef",
+        "brand": "Organic Prairie",
+        "category": "groceries",
+        "price": 12.99,
+        "quantity": 1
+      }
+    ]
+  }
+}
 ```
 
 ## Project Structure

@@ -4,6 +4,7 @@ import (
 	"context"
 	"encoding/json"
 	"fmt"
+	"log"
 	"strings"
 	"time"
 
@@ -61,6 +62,7 @@ func (n *Nexus) generateNewUserPage(ctx context.Context, userId string) (model.P
 		return model.Page{}, fmt.Errorf("failed to marshal user snapshot: %w", err)
 	}
 
+	log.Printf("Background: Generating user page for user %s", userId)
 	chatCompletion, err := n.oaClient.Chat.Completions.New(ctx, openai.ChatCompletionNewParams{
 		Messages: []openai.ChatCompletionMessageParamUnion{
 			openai.UserMessage(fmt.Sprintf("%s\n\nUser Profile: %s", AsyncPrompt, string(userJSON))),
@@ -70,6 +72,7 @@ func (n *Nexus) generateNewUserPage(ctx context.Context, userId string) (model.P
 	if err != nil {
 		return model.Page{}, fmt.Errorf("OpenAI API error: %w", err)
 	}
+	log.Printf("Background: Generated user page for user %s", userId)
 
 	var page model.Page
 	err = json.Unmarshal([]byte(stripCodeFences(chatCompletion.Choices[0].Message.Content)), &page)
@@ -87,6 +90,7 @@ func (n *Nexus) generateNewTriggerPage(ctx context.Context, trigger model.Trigge
 		return model.Page{}, fmt.Errorf("failed to marshal trigger: %w", err)
 	}
 
+	log.Printf("Background: Generating trigger page for trigger type %s", trigger.TriggerType)
 	chatCompletion, err := n.oaClient.Chat.Completions.New(ctx, openai.ChatCompletionNewParams{
 		Messages: []openai.ChatCompletionMessageParamUnion{
 			openai.UserMessage(fmt.Sprintf("%s\n\nTrigger Context: %s", SyncPrompt, string(triggerJSON))),
@@ -96,6 +100,7 @@ func (n *Nexus) generateNewTriggerPage(ctx context.Context, trigger model.Trigge
 	if err != nil {
 		return model.Page{}, fmt.Errorf("OpenAI API error: %w", err)
 	}
+	log.Printf("Background: Generated trigger page for trigger type %s", trigger.TriggerType)
 
 	var page model.Page
 	err = json.Unmarshal([]byte(stripCodeFences(chatCompletion.Choices[0].Message.Content)), &page)

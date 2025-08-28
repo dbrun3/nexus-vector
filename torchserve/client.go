@@ -43,13 +43,26 @@ func NewClient(address, modelName string) (*Client, error) {
 		model:  modelName,
 	}
 
-	// Verify the server is healthy before returning
-	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
-	defer cancel()
+	// Verify the server is healthy before returning with retry logic
+	maxRetries := 30
+	retryDelay := 2 * time.Second
 
-	if _, err := c.Health(ctx); err != nil {
-		c.Close()
-		return nil, fmt.Errorf("server health check failed: %w", err)
+	for attempt := range maxRetries {
+		ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
+		_, healthErr := c.Health(ctx)
+		cancel()
+
+		if healthErr == nil {
+			break
+		}
+
+		if attempt == maxRetries-1 {
+			c.Close()
+			return nil, fmt.Errorf("server health check failed after %d attempts: %w", maxRetries, healthErr)
+		}
+
+		fmt.Printf("TorchServe health check failed (attempt %d/%d), retrying in %v: %v\n", attempt+1, maxRetries, retryDelay, healthErr)
+		time.Sleep(retryDelay)
 	}
 
 	return c, nil
