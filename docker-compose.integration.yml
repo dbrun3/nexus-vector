@@ -25,11 +25,6 @@ services:
 
   redis:
     image: redis:latest
-    healthcheck:
-      test: ["CMD-SHELL", "redis-cli ping | grep PONG"]
-      interval: 1s
-      timeout: 3s
-      retries: 5
     command: ["redis-server"]
 
   mongo:
