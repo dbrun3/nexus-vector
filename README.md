@@ -6,6 +6,14 @@ An LLM-based recommendation system that delivers personalized nexus pages to use
 
 Nexus Vector combines synchronous and asynchronous data processing to provide users with highly relevant, personalized content pages. The system leverages machine learning embeddings to match user profiles and real-time triggers with pre-computed content, enabling fast and contextually appropriate recommendations. It is intended to demonstrate the potential of an LLM-based successor to Nexus Service @fetch-rewards.
 
+## Key Features
+
+- **Dual Embedding Strategy**: Combines immediate trigger-based embeddings (post-snap, e-receipt, redemption) with long-term aggregated user preference embeddings
+- **Semantic Search**: Uses vector similarity to find the most relevant pre-computed pages
+- **Real-time Processing**: Handles embedding user triggers in realtime and delivers resulting pages with minimal latency
+- **Intelligent Content Generation**: Leverages OpenAI to simulate asynchronous, rules-based page creation on cache misses
+- **Scalable Architecture**: Microservices design with independent scaling capabilities
+
 ## Architecture
 
 ### Data Processing Pipeline
@@ -18,14 +26,6 @@ Nexus Vector combines synchronous and asynchronous data processing to provide us
 - **ML Embeddings**: TorchServe with all-MiniLM-L6-v2 model for text-to-embedding conversion
 - **Caching Layer**: Redis for fast user-snapshot embedding retrieval
 - **Data Storage**: MongoDB to simulate longterm user data storage
-
-## Key Features
-
-- **Dual Embedding Strategy**: Combines immediate trigger-based embeddings (post-snap, e-receipt, redemption) with long-term aggregated user preference embeddings
-- **Semantic Search**: Uses vector similarity to find the most relevant pre-computed pages
-- **Real-time Processing**: Handles embedding user triggers in realtime and delivers resulting pages with minimal latency
-- **Intelligent Content Generation**: Leverages OpenAI to simulate asynchronous, rules-based page creation on cache misses
-- **Scalable Architecture**: Microservices design with independent scaling capabilities
 
 ## Performance
 
