@@ -43,8 +43,7 @@ Comprehensive benchmarking results on ARM64 architecture (Apple Silicon with tor
 The system employs optimized text preprocessing to significantly improve embedding generation performance:
 
 - **JSON Cleaning**: Single-pass character filtering removes structural JSON noise (`{}[]"`) and converts delimiters (`:,`) to spaces
-- **Purchase Item Simplification**: Combines brand and product name into unified text, eliminates pricing/quantity details to focus on semantic content
-- **Trigger Simplification**: Streamlines complex trigger objects by preserving core semantic information while removing transactional metadata
+- **Object Simplification**: Streamlines complex objects by preserving core semantic information while removing transactional metadata
 - **Memory Optimization**: Uses pre-allocated `strings.Builder` with capacity planning to minimize memory allocations during text processing
 
 These preprocessing optimizations resulted in **57.6% faster TorchServe inference** and **43.3% faster end-to-end response times** as opposed to using the raw marshalled json object.
